@@ -57,7 +57,7 @@ public struct ChatsResource: Sendable {
     /// - Parameter id: The chat ID.
     /// - Returns: The chat with all its messages.
     public func getHistory(_ id: String) async throws -> ChatWithMessages {
-        return try await client.get(path: "/chats/\(id)")
+        return try await client.get(path: "/chats/\(id)/messages")
     }
 
     /// Sends a message in a chat and gets the assistant's response.
