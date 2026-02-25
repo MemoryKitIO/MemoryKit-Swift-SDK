@@ -134,6 +134,41 @@ final class HTTPClient: Sendable {
         return (bytes, response)
     }
 
+    /// Performs a multipart/form-data POST request and decodes the response.
+    func postMultipart<T: Decodable>(
+        path: String,
+        fileData: Data,
+        fileName: String,
+        mimeType: String,
+        fields: [String: String] = [:]
+    ) async throws -> T {
+        let boundary = "MemoryKit-\(UUID().uuidString)"
+        var request = try buildRequest(method: "POST", path: path)
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+
+        var body = Data()
+
+        // Add text fields
+        for (key, value) in fields {
+            body.append("--\(boundary)\r\n".data(using: .utf8)!)
+            body.append("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n".data(using: .utf8)!)
+            body.append("\(value)\r\n".data(using: .utf8)!)
+        }
+
+        // Add file
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"\(fileName)\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8)!)
+        body.append(fileData)
+        body.append("\r\n".data(using: .utf8)!)
+
+        // Close boundary
+        body.append("--\(boundary)--\r\n".data(using: .utf8)!)
+
+        request.httpBody = body
+        return try await executeWithRetry(request)
+    }
+
     // MARK: - Internals
 
     /// Access the decoder for use by resources.

@@ -12,7 +12,7 @@ public struct SSEEvent: Sendable {
     public let id: String?
 
     /// Decodes the data field as a specific type.
-    public func decode<T: Decodable>(_ type: T.self, decoder: JSONDecoder = .init()) throws -> T {
+    public func decode<T: Decodable>(_ type: T.Type, decoder: JSONDecoder = .init()) throws -> T {
         guard let jsonData = data.data(using: .utf8) else {
             throw MemoryKitError.decodingError(
                 DecodingError.dataCorrupted(.init(

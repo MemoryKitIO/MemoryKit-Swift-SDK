@@ -124,6 +124,55 @@ public struct MemoriesResource: Sendable {
         return try await client.put(path: "/memories/\(id)", body: body)
     }
 
+    /// Uploads a file as a memory. Supports PDF, TXT, Markdown, HTML, JSON, and CSV.
+    ///
+    /// - Parameters:
+    ///   - fileData: The file contents as `Data`.
+    ///   - fileName: The file name (e.g., "document.pdf").
+    ///   - mimeType: The MIME type (e.g., "application/pdf").
+    ///   - title: An optional title for the memory.
+    ///   - tags: Tags to associate with the memory.
+    ///   - metadata: Arbitrary key-value metadata.
+    ///   - userId: The user ID to associate with this memory.
+    /// - Returns: The created memory.
+    @discardableResult
+    public func upload(
+        fileData: Data,
+        fileName: String,
+        mimeType: String = "application/octet-stream",
+        title: String? = nil,
+        tags: [String]? = nil,
+        metadata: [String: JSONValue]? = nil,
+        userId: String? = nil
+    ) async throws -> Memory {
+        var fields = [String: String]()
+        if let title { fields["title"] = title }
+        if let tags { fields["tags"] = tags.joined(separator: ",") }
+        if let userId { fields["userId"] = userId }
+        if let metadata,
+           let metadataData = try? JSONEncoder().encode(metadata),
+           let metadataString = String(data: metadataData, encoding: .utf8) {
+            fields["metadata"] = metadataString
+        }
+
+        return try await client.postMultipart(
+            path: "/memories/upload",
+            fileData: fileData,
+            fileName: fileName,
+            mimeType: mimeType,
+            fields: fields
+        )
+    }
+
+    /// Triggers reprocessing of an existing memory (re-chunk, re-embed).
+    ///
+    /// - Parameter id: The memory ID.
+    /// - Returns: The updated memory.
+    @discardableResult
+    public func reprocess(_ id: String) async throws -> Memory {
+        return try await client.post(path: "/memories/\(id)/reprocess", body: EmptyBody())
+    }
+
     /// Deletes a memory by ID.
     ///
     /// - Parameter id: The memory ID.
