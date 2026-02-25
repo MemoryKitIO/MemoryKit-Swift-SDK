@@ -275,7 +275,7 @@ public struct MemoriesResource: Sendable {
         includeGraph: Bool? = nil,
         filters: QueryFilters? = nil
     ) async throws -> SSEStream {
-        let body = StreamRequest(
+        var body = QueryRequest(
             query: query,
             maxSources: maxSources,
             temperature: temperature,
@@ -286,7 +286,8 @@ public struct MemoriesResource: Sendable {
             includeGraph: includeGraph,
             filters: filters
         )
-        let (bytes, _) = try await client.postStream(path: "/memories/stream", body: body)
+        body.stream = true
+        let (bytes, _) = try await client.postStream(path: "/memories/query", body: body)
         return SSEStream(bytes: bytes)
     }
 }

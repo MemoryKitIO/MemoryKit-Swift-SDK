@@ -79,17 +79,5 @@ struct QueryRequest: Encodable {
     var responseFormat: String?
     var includeGraph: Bool?
     var filters: QueryFilters?
-}
-
-/// Request body for SSE streaming.
-struct StreamRequest: Encodable {
-    let query: String
-    var maxSources: Int?
-    var temperature: Double?
-    var mode: String?
-    var userId: String?
-    var instructions: String?
-    var responseFormat: String?
-    var includeGraph: Bool?
-    var filters: QueryFilters?
+    var stream: Bool?
 }
