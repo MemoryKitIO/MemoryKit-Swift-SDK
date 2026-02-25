@@ -24,7 +24,7 @@ import Foundation
 public final class MemoryKit: Sendable {
 
     /// The SDK version.
-    public static let version = "1.0.0"
+    public static let version = "0.1.1"
 
     /// The configuration used by this client.
     public let configuration: Configuration
