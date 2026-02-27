@@ -32,6 +32,9 @@ public struct Memory: Codable, Sendable, Identifiable {
     /// The processing status of the memory.
     public let status: String?
 
+    /// The number of chunks created from this memory.
+    public let chunksCount: Int?
+
     /// The date the memory was created.
     public let createdAt: Date?
 
@@ -126,13 +129,28 @@ struct BatchIngestRequest: Encodable {
     var defaults: BatchDefaults?
 }
 
+/// A single item result from batch ingestion.
+public struct BatchMemoryResult: Decodable, Sendable {
+    /// The ID of the created memory.
+    public let id: String
+
+    /// The title of the memory.
+    public let title: String?
+
+    /// The processing status.
+    public let status: String?
+
+    /// The index in the original batch.
+    public let index: Int?
+}
+
 /// Response from a batch ingest operation.
 public struct BatchIngestResponse: Decodable, Sendable {
-    /// The IDs of the created memories.
-    public let ids: [String]?
+    /// The created memory items.
+    public let items: [BatchMemoryResult]?
 
-    /// The number of items accepted.
-    public let accepted: Int?
+    /// Total number of items processed.
+    public let total: Int?
 
     /// The number of items that failed.
     public let failed: Int?
@@ -146,6 +164,9 @@ public struct BatchError: Decodable, Sendable {
     /// The index of the failed item.
     public let index: Int?
 
-    /// The error message.
+    /// The error description.
+    public let error: String?
+
+    /// The error message (legacy).
     public let message: String?
 }
