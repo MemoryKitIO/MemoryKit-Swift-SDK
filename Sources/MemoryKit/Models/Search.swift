@@ -81,14 +81,11 @@ public struct GraphEdge: Decodable, Sendable {
     public let type: String?
 }
 
-// MARK: - Request Bodies
+// MARK: - Search Precision
 
-/// Request body for a hybrid search.
-struct SearchRequest: Encodable {
-    let query: String
-    var limit: Int?
-    var scoreThreshold: Double?
-    var includeGraph: Bool?
-    var filters: QueryFilters?
-    var userId: String?
+/// Search precision level controlling the relevance threshold.
+public enum SearchPrecision: String, Sendable {
+    case low
+    case medium
+    case high
 }

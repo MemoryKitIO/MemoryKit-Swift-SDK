@@ -1,25 +1,16 @@
 import Foundation
 
-/// Response from a RAG query.
-public struct QueryResponse: Decodable, Sendable {
-    /// The generated answer.
-    public let answer: String
+// V2: QueryResponse disabled for initial launch.
+// The RAG query endpoint will be re-enabled when LLM-powered features are available.
 
-    /// The confidence score of the answer (0.0 - 1.0).
-    public let confidence: Double?
-
-    /// Source memories referenced in the answer.
-    public let sources: [Source]?
-
-    /// The model used to generate the answer.
-    public let model: String?
-
-    /// A unique request ID for this query.
-    public let requestId: String?
-
-    /// Token usage information.
-    public let usage: Usage?
-}
+// public struct QueryResponse: Decodable, Sendable {
+//     public let answer: String
+//     public let confidence: Double?
+//     public let sources: [Source]?
+//     public let model: String?
+//     public let requestId: String?
+//     public let usage: Usage?
+// }
 
 /// A source memory referenced in a query or search result.
 public struct Source: Codable, Sendable {
@@ -68,16 +59,16 @@ public struct QueryFilters: Encodable, Sendable {
 
 // MARK: - Request Bodies
 
-/// Request body for a RAG query.
-struct QueryRequest: Encodable {
-    let query: String
-    var maxSources: Int?
-    var temperature: Double?
-    var mode: String?
-    var userId: String?
-    var instructions: String?
-    var responseFormat: String?
-    var includeGraph: Bool?
-    var filters: QueryFilters?
-    var stream: Bool?
-}
+// V2: QueryRequest disabled for initial launch.
+// struct QueryRequest: Encodable {
+//     let query: String
+//     var maxSources: Int?
+//     var temperature: Double?
+//     var mode: String?
+//     var userId: String?
+//     var instructions: String?
+//     var responseFormat: String?
+//     var includeGraph: Bool?
+//     var filters: QueryFilters?
+//     var stream: Bool?
+// }

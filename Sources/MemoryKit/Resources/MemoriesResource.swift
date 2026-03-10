@@ -180,114 +180,101 @@ public struct MemoriesResource: Sendable {
         try await client.delete(path: "/memories/\(id)")
     }
 
-    // MARK: - Query & Search
+    // MARK: - Search
 
-    /// Performs a RAG query against your memories.
-    ///
-    /// - Parameters:
-    ///   - query: The natural language query (required).
-    ///   - maxSources: Maximum number of source memories to reference.
-    ///   - temperature: The LLM temperature for generation.
-    ///   - mode: Query mode (e.g., "balanced", "precise", "creative").
-    ///   - userId: Scope the query to a specific user's memories.
-    ///   - instructions: Additional instructions for the LLM.
-    ///   - responseFormat: The desired response format.
-    ///   - includeGraph: Whether to include knowledge graph data.
-    ///   - filters: Filters to apply to the query.
-    /// - Returns: A query response with an answer, sources, and usage.
-    public func query(
-        query: String,
-        maxSources: Int? = nil,
-        temperature: Double? = nil,
-        mode: String? = nil,
-        userId: String? = nil,
-        instructions: String? = nil,
-        responseFormat: String? = nil,
-        includeGraph: Bool? = nil,
-        filters: QueryFilters? = nil
-    ) async throws -> QueryResponse {
-        let body = QueryRequest(
-            query: query,
-            maxSources: maxSources,
-            temperature: temperature,
-            mode: mode,
-            userId: userId,
-            instructions: instructions,
-            responseFormat: responseFormat,
-            includeGraph: includeGraph,
-            filters: filters
-        )
-        return try await client.post(path: "/memories/query", body: body)
-    }
+    // V2: query endpoint disabled for initial launch.
+    // The RAG query endpoint will be re-enabled when LLM-powered features are available.
+    //
+    // public func query(
+    //     query: String,
+    //     maxSources: Int? = nil,
+    //     temperature: Double? = nil,
+    //     mode: String? = nil,
+    //     userId: String? = nil,
+    //     instructions: String? = nil,
+    //     responseFormat: String? = nil,
+    //     includeGraph: Bool? = nil,
+    //     filters: QueryFilters? = nil
+    // ) async throws -> QueryResponse {
+    //     let body = QueryRequest(
+    //         query: query,
+    //         maxSources: maxSources,
+    //         temperature: temperature,
+    //         mode: mode,
+    //         userId: userId,
+    //         instructions: instructions,
+    //         responseFormat: responseFormat,
+    //         includeGraph: includeGraph,
+    //         filters: filters
+    //     )
+    //     return try await client.post(path: "/memories/query", body: body)
+    // }
 
     /// Performs a hybrid search across your memories.
     ///
     /// - Parameters:
-    ///   - query: The search query.
-    ///   - limit: Maximum number of results.
-    ///   - scoreThreshold: Minimum relevance score threshold.
-    ///   - includeGraph: Whether to include knowledge graph data.
-    ///   - filters: Filters to apply to the search.
+    ///   - query: The search query (required).
+    ///   - precision: Search precision level: `.low`, `.medium`, or `.high` (default: `.medium`).
+    ///   - limit: Maximum number of results (1–100, default: 10).
     ///   - userId: Scope the search to a specific user's memories.
+    ///   - type: Filter by memory type.
+    ///   - tags: Comma-separated tags string to filter by.
+    ///   - createdAfter: Filter memories created after this ISO 8601 timestamp.
+    ///   - createdBefore: Filter memories created before this ISO 8601 timestamp.
+    ///   - includeGraph: Whether to include knowledge graph data.
     /// - Returns: Search results with optional graph data.
     public func search(
         query: String,
+        precision: SearchPrecision? = nil,
         limit: Int? = nil,
-        scoreThreshold: Double? = nil,
-        includeGraph: Bool? = nil,
-        filters: QueryFilters? = nil,
-        userId: String? = nil
-    ) async throws -> SearchResponse {
-        let body = SearchRequest(
-            query: query,
-            limit: limit,
-            scoreThreshold: scoreThreshold,
-            includeGraph: includeGraph,
-            filters: filters,
-            userId: userId
-        )
-        return try await client.post(path: "/memories/search", body: body)
-    }
-
-    // MARK: - Streaming
-
-    /// Streams a RAG query response as server-sent events.
-    ///
-    /// - Parameters:
-    ///   - query: The natural language query (required).
-    ///   - maxSources: Maximum number of source memories to reference.
-    ///   - temperature: The LLM temperature for generation.
-    ///   - mode: Query mode (e.g., "balanced", "precise", "creative").
-    ///   - userId: Scope the query to a specific user's memories.
-    ///   - instructions: Additional instructions for the LLM.
-    ///   - responseFormat: The desired response format.
-    ///   - includeGraph: Whether to include knowledge graph data.
-    ///   - filters: Filters to apply to the query.
-    /// - Returns: An `AsyncSequence` of SSE events.
-    public func stream(
-        query: String,
-        maxSources: Int? = nil,
-        temperature: Double? = nil,
-        mode: String? = nil,
         userId: String? = nil,
-        instructions: String? = nil,
-        responseFormat: String? = nil,
-        includeGraph: Bool? = nil,
-        filters: QueryFilters? = nil
-    ) async throws -> SSEStream {
-        var body = QueryRequest(
-            query: query,
-            maxSources: maxSources,
-            temperature: temperature,
-            mode: mode,
-            userId: userId,
-            instructions: instructions,
-            responseFormat: responseFormat,
-            includeGraph: includeGraph,
-            filters: filters
-        )
-        body.stream = true
-        let (bytes, _) = try await client.postStream(path: "/memories/query", body: body)
-        return SSEStream(bytes: bytes)
+        type: String? = nil,
+        tags: String? = nil,
+        createdAfter: String? = nil,
+        createdBefore: String? = nil,
+        includeGraph: Bool? = nil
+    ) async throws -> SearchResponse {
+        var queryItems = [URLQueryItem]()
+        queryItems.append(URLQueryItem(name: "query", value: query))
+        if let precision = precision { queryItems.append(URLQueryItem(name: "precision", value: precision.rawValue)) }
+        if let limit = limit { queryItems.append(URLQueryItem(name: "limit", value: String(limit))) }
+        if let userId = userId { queryItems.append(URLQueryItem(name: "user_id", value: userId)) }
+        if let type = type { queryItems.append(URLQueryItem(name: "type", value: type)) }
+        if let tags = tags { queryItems.append(URLQueryItem(name: "tags", value: tags)) }
+        if let createdAfter = createdAfter { queryItems.append(URLQueryItem(name: "created_after", value: createdAfter)) }
+        if let createdBefore = createdBefore { queryItems.append(URLQueryItem(name: "created_before", value: createdBefore)) }
+        if let includeGraph = includeGraph { queryItems.append(URLQueryItem(name: "include_graph", value: String(includeGraph))) }
+
+        return try await client.get(path: "/memories/search", queryItems: queryItems)
     }
+
+    // V2: streaming disabled for initial launch.
+    // The streaming endpoint will be re-enabled when LLM-powered features are available.
+    //
+    // public func stream(
+    //     query: String,
+    //     maxSources: Int? = nil,
+    //     temperature: Double? = nil,
+    //     mode: String? = nil,
+    //     userId: String? = nil,
+    //     instructions: String? = nil,
+    //     responseFormat: String? = nil,
+    //     includeGraph: Bool? = nil,
+    //     filters: QueryFilters? = nil
+    // ) async throws -> SSEStream {
+    //     var body = QueryRequest(
+    //         query: query,
+    //         maxSources: maxSources,
+    //         temperature: temperature,
+    //         mode: mode,
+    //         userId: userId,
+    //         instructions: instructions,
+    //         responseFormat: responseFormat,
+    //         includeGraph: includeGraph,
+    //         filters: filters
+    //     )
+    //     body.stream = true
+    //     let (bytes, _) = try await client.postStream(path: "/memories/query", body: body)
+    //     return SSEStream(bytes: bytes)
+    // }
 }

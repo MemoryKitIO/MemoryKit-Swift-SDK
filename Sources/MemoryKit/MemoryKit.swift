@@ -2,7 +2,7 @@ import Foundation
 
 /// The main MemoryKit client for interacting with the MemoryKit API.
 ///
-/// Use the resource properties (`memories`, `chats`, `users`, `webhooks`, `status`, `feedback`)
+/// Use the resource properties (`memories`, `users`, `webhooks`, `status`, `feedback`)
 /// to access specific API endpoints.
 ///
 /// ```swift
@@ -15,11 +15,8 @@ import Foundation
 ///     tags: ["planning", "q4"]
 /// )
 ///
-/// // Query memories
-/// let answer = try await mk.memories.query(
-///     query: "Summarize our Q4 goals",
-///     mode: "balanced"
-/// )
+/// // Search memories
+/// let results = try await mk.memories.search(query: "Q4 goals")
 /// ```
 public final class MemoryKit: Sendable {
 
@@ -34,8 +31,8 @@ public final class MemoryKit: Sendable {
     /// Resource for interacting with memories.
     public let memories: MemoriesResource
 
-    /// Resource for interacting with chats.
-    public let chats: ChatsResource
+    // V2: Chats resource disabled for initial launch.
+    // public let chats: ChatsResource
 
     /// Resource for interacting with users and user events.
     public let users: UsersResource
@@ -78,7 +75,7 @@ public final class MemoryKit: Sendable {
         self.configuration = configuration
         self.client = HTTPClient(configuration: configuration)
         self.memories = MemoriesResource(client: client)
-        self.chats = ChatsResource(client: client)
+        // V2: self.chats = ChatsResource(client: client)
         self.users = UsersResource(client: client)
         self.webhooks = WebhooksResource(client: client)
         self.status = StatusResource(client: client)

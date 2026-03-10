@@ -37,12 +37,15 @@ let memory = try await mk.memories.create(
     tags: ["preferences"]
 )
 
-// Query with RAG
-let result = try await mk.memories.query(
-    query: "What are the user's preferences?"
+// Search memories
+let results = try await mk.memories.search(
+    query: "What are the user's preferences?",
+    precision: .high
 )
 
-print(result.answer)
+for result in results.results {
+    print(result.title ?? result.id, result.score ?? 0)
+}
 ```
 
 ## Requirements
@@ -86,85 +89,15 @@ try await mk.memories.update("mem_abc123", title: "Updated Title")
 // Search
 let results = try await mk.memories.search(
     query: "quarterly revenue targets",
-    limit: 10
+    precision: .high,
+    limit: 10,
+    type: "meeting_notes",
+    tags: "planning,q4",
+    createdAfter: "2025-01-01T00:00:00Z"
 )
-
-// Query (RAG)
-let answer = try await mk.memories.query(
-    query: "Summarize our Q4 goals",
-    mode: "balanced",
-    maxSources: 5,
-    instructions: "Be concise. Use bullet points."
-)
-print(answer.answer)
-print(answer.sources.count, "sources used")
 
 // Delete
 try await mk.memories.delete("mem_abc123")
-```
-
-### Streaming
-
-```swift
-for try await event in mk.memories.stream(
-    query: "What happened in our last meeting?",
-    mode: "balanced"
-) {
-    switch event.event {
-    case "text":
-        if let content = event.data["content"] as? String {
-            print(content, terminator: "")
-        }
-    case "sources":
-        print("\nSources received")
-    case "done":
-        print("\n--- Stream complete ---")
-    case "error":
-        print("\nError:", event.data)
-    default:
-        break
-    }
-}
-```
-
-### Chats
-
-```swift
-// Create a chat
-let chat = try await mk.chats.create(
-    userId: "user_123",
-    title: "Support Chat"
-)
-
-// Send a message
-let response = try await mk.chats.sendMessage(
-    chat.id,
-    message: "How do I reset my password?",
-    mode: "balanced"
-)
-print(response.message.content)
-
-// Get history
-let history = try await mk.chats.getHistory("chat_abc123")
-for msg in history.messages {
-    print("\(msg.role): \(msg.content)")
-}
-
-// Stream a message
-for try await event in mk.chats.streamMessage(
-    chat.id,
-    message: "Can you explain in more detail?"
-) {
-    if event.event == "text", let content = event.data["content"] as? String {
-        print(content, terminator: "")
-    }
-}
-
-// List chats
-let chats = try await mk.chats.list(userId: "user_123", limit: 20)
-
-// Delete
-try await mk.chats.delete("chat_abc123")
 ```
 
 ### Users
@@ -250,8 +183,8 @@ try await mk.feedback.create(
 
 ```swift
 do {
-    let result = try await mk.memories.query(query: "...")
-    print(result.answer)
+    let results = try await mk.memories.search(query: "...")
+    print(results.results)
 } catch let error as MemoryKitError {
     switch error {
     case .requestFailed(let statusCode, let code, let message):
